@@ -11,10 +11,14 @@
 		   https://www.codeproject.com/articles/693841/making-dashboards-with-dc-js-part-1-using-crossfil		
 	    -->
 
+	     
+
+
+
 		 <script src='https://d3js.org/d3.v4.min.js'></script>
 		 <script src='https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.5.2/crossfilter.min.js'></script>
 		 <script src='https://cdnjs.cloudflare.com/ajax/libs/dc/3.1.8/dc.min.js'></script>
-		
+		 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/3.1.8/dc.css" />
 
 	</head>
 	
@@ -103,7 +107,7 @@
 				.x(d3.scaleBand().domain(ordinalColors))		
 				.dimension(colorDim)		
 				.yAxisLabel('Count')					
-				.group(colorGroupCount)			
+				.group(colorGroupCount)							
 				.defineColors(rgbColorScale);				
 
 			colorChartCount.yAxis().ticks(4);		
@@ -156,14 +160,24 @@
 					.xUnits(dc.units.ordinal)  			
 					.margins({top:10,left:30,right:15,bottom:35})	
 					.barPadding(0.1)
-					.outerPadding(0.1);
+					.outerPadding(0.1)					
+					.transitionDuration(500);
 
 					barChart.defineColors = function(colorScale){
 						
 						this.renderlet(chart=>{
 						    chart.selectAll('rect.bar')
 							     .each(function(d){
-								    d3.select(this).attr('style', 'fill: ' + colorScale(d.x));
+
+                                    let isSelected = this.classList.contains('selected');
+                                    if(isSelected){
+                                        d3.select(this).attr('style', 'fill: ' + colorScale(d.x) + ';stroke-width:2;stroke:#39ff14');
+                                       
+                                    } else {
+                                    	d3.select(this).attr('style', 'fill: ' + colorScale(d.x));
+                                    }
+
+								    
 							     });
 							 	
 					    });
@@ -198,12 +212,7 @@
 				.keyAccessor(d => d.key[1])
 				.valueAccessor(d => d.value)
 				.ordinalColors(['blue','green','red','yellow'])
-				.legend(dc.legend().x(430).y(350));
-
-			 
-			 
-
-
+				.legend(dc.legend().x(430).y(350)); 
 			
             
             dc.renderAll();
@@ -217,13 +226,6 @@
             //let functionFilter = ageDim.filter(age => age === 2);  
             //let functionFilterResult = JSON.stringify(functionFilter.top(Infinity)).replace('[','[\n\t').replace(/}\,/g,'},\n\t').replace(']','\n]');
             //console.log(functionFilterResult);
-
-           
-
-           
-
-			
-
 
 
 		</script>
