@@ -92,8 +92,61 @@
             let ageGroupCount = ageDim.group().reduceCount();
             let ageGroupValueSum = ageDim.group().reduceSum(d => d.value);
 
-            let colorAgeDim = cf.dimension(d => [d.color, d.age]);              
-            let colorAgeGroup = colorAgeDim.group().reduceSum( d => d.value);
+            let colorAgeDim = cf.dimension(d => [d.color, d.age]);
+
+
+            function reduceAdd(previous, current) {
+
+            	if(current){
+            		if(current.value !== null){
+            			if(previous.sum === null){
+            				previous.sum = current.value;
+            				previous.count = 1;
+            			} else {
+            				previous.sum += current.value;
+            				previous.count += 1;
+
+            			}
+            		} 
+            	} 
+            	return previous;            									
+			}
+
+			function reduceRemove(previous, current) {					
+				if(current){
+            		if(current.value !== null){
+            			if(previous.sum !== null){
+            				previous.sum -= current.value;
+            				previous.count -= 1;
+            				if(previous.count === 0){
+            					previous.sum = null;
+            				}
+            			} 
+            		} 
+            	} 
+            	return previous; 				
+			}
+
+			function reduceInit(previous) {
+					return { 
+					        sum: null,
+					        count: 0
+					       };
+			}
+				              
+            let colorAgeGroup = colorAgeDim.group().reduce(reduceAdd, reduceRemove, reduceInit);
+
+            let filteredColorAgeGroup = removeMissingEntries(colorAgeGroup);
+
+            function removeMissingEntries(sourceGroup) {
+				return {
+					all:function () {
+						return sourceGroup.all().filter(function(d) {							
+							return d.value.sum !== null; 
+						});
+					}
+				};
+			}
 
             let ordinalColors =  ['red','green','blue'];    
             let ordinalAgeColors =  ['lightgray','grey','#666666'];                    
@@ -196,7 +249,8 @@
 				.height(500)
 				.chart( c => 
 				       dc.lineChart(c)
-				       .renderDataPoints(true)					       
+				       .renderDataPoints(true)
+				           				       
 				       	
 				)				
 				.xAxisLabel('Age')
@@ -204,13 +258,15 @@
 				.dimension(colorAgeDim)				
 				.yAxisLabel('Value')
 				.elasticY(true)
-				.group(colorAgeGroup)					
+				.group(filteredColorAgeGroup)					
 				.brushOn(false)	
 				.clipPadding(10)
 				.mouseZoomable(true)
 				.seriesAccessor(d => d.key[0])
 				.keyAccessor(d => d.key[1])
-				.valueAccessor(d => d.value)
+				.valueAccessor(d => {
+					return d.value.sum;
+				})
 				.ordinalColors(['blue','green','red','yellow'])
 				.legend(dc.legend().x(430).y(350)); 
 			
